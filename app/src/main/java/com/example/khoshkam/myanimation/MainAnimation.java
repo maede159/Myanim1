@@ -15,12 +15,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.Chronometer;
 import android.widget.Toast;
 
 
 public class MainAnimation extends AppCompatActivity implements View.OnTouchListener {
-    Animation fadeOut, fadein, fade,fade1;
+    Animation fadeOut, fadein, fade,fade1,fade2;
     AppCompatImageButton ibtn_voice, ibtn_more, ibtn_camera, ibtn_add;
     AppCompatTextView tv_textView;
     Chronometer counter_tv;
@@ -39,6 +41,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
         fadein = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in_animation);
         fade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
         fade1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade1);
+        fade2 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_voice);
 
     }
 
@@ -58,7 +61,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
         iv_voice.setVisibility(View.INVISIBLE);
         tv_arrow = findViewById(R.id.tv_arrow);
         arrow = findViewById(R.id.arrow);
-
+        iv_trash.setY(tv_textView.getY()+100);
     }
 
 
@@ -69,7 +72,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
                 setActionDown();
                 break;
             case MotionEvent.ACTION_MOVE:
-                setActionMove();
+                setActionMove(motionEvent);
                 break;
             case MotionEvent.ACTION_UP:
                 setActionUp();
@@ -100,16 +103,163 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
         translateTextView.setDuration(200);
         translateTextView.start();
 
+        ObjectAnimator translate=ObjectAnimator.ofFloat(iv_voice,"translationY",0);
+        translate.setDuration(200);
+        translate.start();
+        translate.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
+
+
+
+//        iv_trash.setVisibility(View.GONE);
+
 
     }
+    boolean count=false;
 
-    private void setActionMove() {
-        ObjectAnimator translateTextView=ObjectAnimator.ofFloat(iv_voice,"translationY",0);
-        translateTextView.setDuration(200);
-        translateTextView.start();
+    private void setActionMove(MotionEvent move) {
+        if (move.getRawX()<=ibtn_voice.getX()-5&&count) {
+            counter_tv.setVisibility(View.GONE);
+            Toast.makeText(this, "aaaaaaa"+count, Toast.LENGTH_SHORT).show();
+            iv_voice.clearAnimation();
+            ObjectAnimator translateTextView = ObjectAnimator.ofFloat(iv_voice, "translationY", -150);
+            translateTextView.setDuration(50);
+            translateTextView.start();
+            translateTextView.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    ObjectAnimator translate=ObjectAnimator.ofFloat(iv_voice,"rotation",0,180);
+                    translate.setDuration(200);
+                    translate.start();
+                    translate.addListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            ObjectAnimator translateTextView = ObjectAnimator.ofFloat(iv_voice, "translationY", 10);
+                            translateTextView.setDuration(200);
+                            translateTextView.start();
+                            translateTextView.addListener(new Animator.AnimatorListener() {
+                                @Override
+                                public void onAnimationStart(Animator animator) {
+
+                                }
+
+                                @Override
+                                public void onAnimationEnd(Animator animator) {
+                                    ObjectAnimator translatetrash1 = ObjectAnimator.ofFloat(iv_trash, "translationY", tv_textView.getY()+100);
+                                    translatetrash1.setDuration(200);
+                                    translatetrash1.start();
+                                    ObjectAnimator translatetrash = ObjectAnimator.ofFloat(iv_voice, "translationY", tv_textView.getY()+100);
+                                    translatetrash.setDuration(200);
+                                    translatetrash.start();
+
+                                    translatetrash1.addListener(new Animator.AnimatorListener() {
+                                        @Override
+                                        public void onAnimationStart(Animator animator) {
+
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animator animator) {
+                                            ObjectAnimator translate=ObjectAnimator.ofFloat(iv_voice,"rotation",180,0);
+                                            translate.setDuration(200);
+                                            translate.start();
+                                        }
+
+                                        @Override
+                                        public void onAnimationCancel(Animator animator) {
+
+                                        }
+
+                                        @Override
+                                        public void onAnimationRepeat(Animator animator) {
+
+                                        }
+                                    });
+
+                                }
+
+                                @Override
+                                public void onAnimationCancel(Animator animator) {
+
+                                }
+
+                                @Override
+                                public void onAnimationRepeat(Animator animator) {
+
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animator animator) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animator) {
+
+                }
+            });
+//            ObjectAnimator translate = ObjectAnimator.ofFloat(iv_voice, "rotation", 0,180);
+//            translate.setDuration(10);
+//            translate.setRepeatCount(1);
+//            translate.start();
+
+
+            iv_trash.setVisibility(View.VISIBLE);
+            ObjectAnimator translatetrash1 = ObjectAnimator.ofFloat(iv_trash, "translationY", -tv_textView.getY()+20);
+            translatetrash1.setDuration(50);
+            translatetrash1.start();
+            count=false;
+        }
     }
+
+
 
     private void setActionDown() {
+
+        count=true;
         ibtn_voice.startAnimation(fadeOut);
         ibtn_more.startAnimation(fade1);
         ibtn_camera.startAnimation(fade1);
@@ -126,6 +276,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
 
             @Override
             public void onAnimationEnd(Animator animator) {
+
                 counter_tv.setVisibility(View.VISIBLE);
                 counter_tv.setBase(SystemClock.elapsedRealtime());
                 startTime = System.currentTimeMillis();
