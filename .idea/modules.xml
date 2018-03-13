@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MyAnimation.iml" filepath="$PROJECT_DIR$/MyAnimation.iml" />
+      <module fileurl="file://F:\animation-android-master\MyAnimation.iml" filepath="F:\animation-android-master\MyAnimation.iml" />
+      <module fileurl="file://F:\animation-android-master\Myanim1-master.iml" filepath="F:\animation-android-master\Myanim1-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/animation-android-master.iml" filepath="$PROJECT_DIR$/animation-android-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://F:\animation-android-master\app\app.iml" filepath="F:\animation-android-master\app\app.iml" />
     </modules>
   </component>
 </project>
