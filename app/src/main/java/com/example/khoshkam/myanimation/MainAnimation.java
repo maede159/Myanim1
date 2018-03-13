@@ -5,24 +5,22 @@ import android.animation.ObjectAnimator;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 import android.widget.Chronometer;
 import android.widget.Toast;
 
 
 public class MainAnimation extends AppCompatActivity implements View.OnTouchListener {
-    Animation fadeOut, fadein, fade,fade1,fade2;
+    Animation fadeOut, fadein, fade,fade1,fade2,fade3;
     AppCompatImageButton ibtn_voice, ibtn_more, ibtn_camera, ibtn_add;
     AppCompatTextView tv_textView;
     Chronometer counter_tv;
@@ -31,6 +29,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
     private float tv;
     AppCompatTextView tv_arrow;
     private long startTime=0;
+    private AnimatedVectorDrawableCompat animatedVectorDrawable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +41,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
         fade = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
         fade1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade1);
         fade2 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_voice);
+        fade3 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.transition_fade);
 
     }
 
@@ -62,6 +62,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
         tv_arrow = findViewById(R.id.tv_arrow);
         arrow = findViewById(R.id.arrow);
         iv_trash.setY(tv_textView.getY()+100);
+        animatedVectorDrawable = AnimatedVectorDrawableCompat.create(getApplicationContext(), R.drawable.basket_animated);
     }
 
 
@@ -78,7 +79,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
                 setActionUp();
                 break;
         }
-        return false;
+        return true;
     }
 
     private void setActionUp() {
@@ -86,7 +87,6 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
         iv_voice.clearAnimation();
         iv_voice.setColorFilter(Color.BLACK);
         counter_tv.setVisibility(View.GONE);
-
         ibtn_voice.startAnimation(fadein);
         ibtn_more.startAnimation(fadein);
         ibtn_camera.startAnimation(fadein);
@@ -94,15 +94,12 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
         ObjectAnimator translateVoice=ObjectAnimator.ofFloat(iv_voice,"translationX",0);
         translateVoice.setDuration(200);
         translateVoice.start();
-
         ObjectAnimator translateAdd=ObjectAnimator.ofFloat(ibtn_add,"translationX",0);
         translateAdd.setDuration(200);
         translateAdd.start();
-
         ObjectAnimator translateTextView=ObjectAnimator.ofFloat(tv_textView,"translationX",0);
         translateTextView.setDuration(200);
         translateTextView.start();
-
         ObjectAnimator translate=ObjectAnimator.ofFloat(iv_voice,"translationY",0);
         translate.setDuration(200);
         translate.start();
@@ -128,17 +125,45 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
             }
         });
 
-
-
-//        iv_trash.setVisibility(View.GONE);
-
-
     }
     boolean count=false;
 
     private void setActionMove(MotionEvent move) {
+
         if (move.getRawX()<=ibtn_voice.getX()-5&&count) {
-            counter_tv.setVisibility(View.GONE);
+
+            tv_arrow.startAnimation(fade3);
+            arrow.startAnimation(fade3);
+            fade3.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+//            ObjectAnimator translateTextView1 = ObjectAnimator.ofFloat(tv_arrow, "translationX", -600);
+//            translateTextView1.setDuration(1000);
+//            translateTextView1.start();
+//            ObjectAnimator translateTextView2 = ObjectAnimator.ofFloat(arrow, "translationX", -600);
+//            translateTextView2.setDuration(1000);
+//            translateTextView2.start();
+//
+//            ObjectAnimator translateTextView0 = ObjectAnimator.ofFloat(tv_arrow, "alpha", -600);
+//            translateTextView0.setDuration(1000);
+//            translateTextView0.start();
+//            ObjectAnimator translateTextView00 = ObjectAnimator.ofFloat(arrow, "alpha", -600);
+//            translateTextView00.setDuration(1000);
+//            translateTextView00.start();
+            counter_tv.setVisibility(View.INVISIBLE);
             Toast.makeText(this, "aaaaaaa"+count, Toast.LENGTH_SHORT).show();
             iv_voice.clearAnimation();
             ObjectAnimator translateTextView = ObjectAnimator.ofFloat(iv_voice, "translationY", -150);
@@ -163,6 +188,8 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
 
                         @Override
                         public void onAnimationEnd(Animator animator) {
+                            iv_trash.setImageDrawable(animatedVectorDrawable);
+                            animatedVectorDrawable.start();
                             ObjectAnimator translateTextView = ObjectAnimator.ofFloat(iv_voice, "translationY", 10);
                             translateTextView.setDuration(200);
                             translateTextView.start();
@@ -180,6 +207,7 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
                                     ObjectAnimator translatetrash = ObjectAnimator.ofFloat(iv_voice, "translationY", tv_textView.getY()+100);
                                     translatetrash.setDuration(200);
                                     translatetrash.start();
+
 
                                     translatetrash1.addListener(new Animator.AnimatorListener() {
                                         @Override
@@ -204,7 +232,6 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
 
                                         }
                                     });
-
                                 }
 
                                 @Override
@@ -258,7 +285,12 @@ public class MainAnimation extends AppCompatActivity implements View.OnTouchList
 
 
     private void setActionDown() {
-
+        ObjectAnimator translateTextView1 = ObjectAnimator.ofFloat(tv_arrow, "translationX", -400);
+        translateTextView1.setDuration(100);
+        translateTextView1.start();
+        ObjectAnimator translateTextView2 = ObjectAnimator.ofFloat(arrow, "translationX", -400);
+        translateTextView2.setDuration(100);
+        translateTextView2.start();
         count=true;
         ibtn_voice.startAnimation(fadeOut);
         ibtn_more.startAnimation(fade1);
