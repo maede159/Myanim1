@@ -3,39 +3,35 @@ package com.maede.recordview;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
+import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.media.MediaRecorder;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Chronometer;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import java.io.IOException;
-
-import static android.Manifest.permission.RECORD_AUDIO;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+/**
+ * Created by Khoshkam on 3/15/2018.
+ */
 
 public class RecordView1 extends RelativeLayout implements View.OnTouchListener {
+
+    private Animation fadeOut, fadein, fade, fade1, fade_transition_arrow,fade3;
     private AppCompatImageButton ibtn_voice, ibtn_more, ibtn_camera, ibtn_add;
     private LinearLayout lin_arrow;
     private AppCompatTextView tv_textView, tv_arrow;
@@ -43,14 +39,18 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
     private AppCompatImageView iv_trash, iv_voice, arrow, iv_upper_lock, iv_lower_lock, iv_arrowup;
     private long startTime = 0;
     private AnimatedVectorDrawableCompat animatedVectorDrawable;
-    private RelativeLayout relaytivelayout_lock;
+    private boolean count = false;
+    private boolean invalidate = false;
+    RelativeLayout relaytivelayout_lock;
+    private ObjectAnimator translatetrash1, translatetrash0, translatetrash00, translatetrash11, translatetrash000, translatetrash0000;
     private Context context;
-    private boolean isSwiping, validate, count;
-    private String mFileName;
-    private MediaRecorder mRecorder;
+    boolean isSwiping = false;
+    boolean validate = true;
+
 
     public RecordView1(Context context) {
         super(context);
+
         this.context = context;
         init();
     }
@@ -74,12 +74,12 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
         init();
     }
 
+
     private void init() {
         View view = View.inflate(context, R.layout.main, null);
         addView(view);
-        setFileName();
         relaytivelayout_lock = view.findViewById(R.id.relaytivelayout_lock);
-        relaytivelayout_lock.setY(dp(330));
+        relaytivelayout_lock.setY(330);
         ibtn_voice = view.findViewById(R.id.ibtn_voice);
         ibtn_voice.setOnTouchListener(this);
         ibtn_voice.bringToFront();
@@ -101,6 +101,16 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
         iv_upper_lock = view.findViewById(R.id.iv_upper_lock);
         iv_lower_lock = view.findViewById(R.id.iv_lower_lock);
         iv_arrowup = view.findViewById(R.id.iv_arrowup);
+//*********************
+        fade1 = AnimationUtils.loadAnimation(context, R.anim.fade1);
+        fade = AnimationUtils.loadAnimation(context, R.anim.fade);
+        fade_transition_arrow = AnimationUtils.loadAnimation(context, R.anim.transition_fade);
+        fadein = AnimationUtils.loadAnimation(context, R.anim.fade_in_animation);
+        fadeOut = AnimationUtils.loadAnimation(context, R.anim.fade_out_animation);
+        fade3 = AnimationUtils.loadAnimation(context, R.anim.transition_fade);
+
+//        *****************
+
     }
 
     @Override
@@ -108,6 +118,7 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
         switch (motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 setActionDown();
+
                 break;
             case MotionEvent.ACTION_MOVE:
                 setActionMove(motionEvent);
@@ -122,21 +133,25 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
     public void setActionDown() {
         if (!isSwiping) {
             isSwiping = true;
-            startRecording(mFileName);
-            AlphaAnim.fadeButtonVoice(context, ibtn_voice);
-            AlphaAnim.fadeIn(context, lin_arrow);
-            AlphaAnim.fadeOut(context, ibtn_more);
-            AlphaAnim.fadeOut(context, ibtn_camera);
-            iv_voice.setVisibility(View.VISIBLE);
-            TranslateAnim.startTranslateX(lin_arrow, -dp(100));
-            lin_arrow.setVisibility(View.VISIBLE);
             count = true;
+            ibtn_voice.startAnimation(fadeOut);
+            lin_arrow.startAnimation(fadein);
+            ibtn_more.startAnimation(fade1);
+            ibtn_camera.startAnimation(fade1);
             iv_voice.setVisibility(View.VISIBLE);
+            TransitionAnim.startTransitionX(lin_arrow, -300);
+            lin_arrow.setVisibility(View.VISIBLE);
             float x = iv_voice.getX();
-            ObjectAnimator translateVoice = ObjectAnimator.ofFloat(iv_voice, "translationX", -x);
-            translateVoice.setDuration(300);
-            translateVoice.start();
-            translateVoice.addListener(new Animator.AnimatorListener() {
+            AnimatorSet animatorSet = new AnimatorSet();
+            ObjectAnimator transitionVoice = ObjectAnimator.ofFloat(iv_voice, "translationX", -x);
+            ObjectAnimator fadeVoice = ObjectAnimator.ofFloat(iv_voice, "alpha", 0);
+            fadeVoice.setRepeatMode(ValueAnimator.RESTART);
+            fadeVoice.setRepeatCount(ValueAnimator.INFINITE);
+            animatorSet.setDuration(500);
+            animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
+            animatorSet.playSequentially(transitionVoice, fadeVoice);
+            animatorSet.start();
+            transitionVoice.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {
                 }
@@ -147,7 +162,6 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
                     counter_tv.setBase(SystemClock.elapsedRealtime());
                     startTime = System.currentTimeMillis();
                     counter_tv.start();
-                    AlphaAnim.fadeRepeat(context, iv_voice);
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -165,18 +179,15 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
                 public void onAnimationRepeat(Animator animator) {
                 }
             });
-            AnimatorSet animatorSet = new AnimatorSet();
-            ObjectAnimator translateAdd = ObjectAnimator.ofFloat(ibtn_add, "translationX", -100);
-            ObjectAnimator translateTextView = ObjectAnimator.ofFloat(tv_textView, "translationX", -900);
+            TransitionAnim.startTransitionX(ibtn_add, -100);
+            TransitionAnim.startTransitionX(tv_textView,-900);
             ObjectAnimator translateLock = ObjectAnimator.ofFloat(relaytivelayout_lock, "translationY", 0);
-            animatorSet.setDuration(300);
-            animatorSet.setInterpolator(new AccelerateInterpolator());
-            animatorSet.playTogether(translateAdd, translateTextView, translateLock);
-            animatorSet.start();
-            validate = true;
+            translateLock.setDuration(300);
+            translateLock.start();
             translateLock.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {
+
                 }
 
                 @Override
@@ -186,118 +197,220 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
 
                 @Override
                 public void onAnimationCancel(Animator animator) {
+
                 }
 
                 @Override
                 public void onAnimationRepeat(Animator animator) {
+
                 }
             });
         }
     }
 
+
     public void setActionUp(MotionEvent motionEvent) {
         validate = false;
-        stopRecording();
+        TransitionAnim.startTransitionX(lin_arrow,0);
         lin_arrow.setVisibility(View.GONE);
-        TranslateAnim.startTranslateX(lin_arrow, 0);
-        TranslateAnim.startTranslateY(relaytivelayout_lock, 330);
-        AlphaAnim.fadeIn(context, ibtn_voice);
-        AlphaAnim.fadeIn(context, ibtn_more);
-        AlphaAnim.fadeIn(context, ibtn_camera);
+        translatetrash1.cancel();
+        translatetrash0.cancel();
+        translatetrash00.cancel();
+        translatetrash11.cancel();
+        translatetrash000.cancel();
+        translatetrash0000.cancel();
+        TransitionAnim.startTransitionY(relaytivelayout_lock,330);
+        AlphaAnim.startFadeIn(context,ibtn_voice);
+        AlphaAnim.startFadeIn(context,ibtn_more);
+        AlphaAnim.startFadeIn(context,ibtn_camera);
         if (motionEvent.getRawX() >= ibtn_voice.getX() - 5) {
             isSwiping = false;
             counter_tv.stop();
             counter_tv.setVisibility(View.GONE);
             iv_voice.clearAnimation();
             iv_voice.setVisibility(View.GONE);
-            TranslateAnim.startTranslateX(iv_voice, 0);
-            TranslateAnim.startTranslateX(ibtn_add, 0);
-            TranslateAnim.startTranslateX(tv_textView, 0);
+            TransitionAnim.startTransitionX(iv_voice,0);
+            TransitionAnim.startTransitionX(ibtn_add,0);
+            TransitionAnim.startTransitionX(tv_textView,0);
         }
     }
-
     public void setActionMove(MotionEvent move) {
-        if (move.getRawX() <= ibtn_voice.getX() - 5 && count) {
-            TranslateAnim.startTranslateY(relaytivelayout_lock, 330);
-            AlphaAnim.fadeTranslate(context, lin_arrow);
-            counter_tv.stop();
-            counter_tv.setVisibility(View.INVISIBLE);
-            AnimatorSet animatorSet = new AnimatorSet();
-            ObjectAnimator translateMicToTop = ObjectAnimator.ofFloat(iv_voice, "translationY", -150);
-            ObjectAnimator translateVoiceRotation = ObjectAnimator.ofFloat(iv_voice, "rotation", 0, 180);
-            ObjectAnimator translateVoiceToBellow = ObjectAnimator.ofFloat(iv_voice, "translationY", 0);
-            animatorSet.setDuration(300);
-            animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
-            animatorSet.playSequentially(translateMicToTop, translateVoiceRotation, translateVoiceToBellow);
-            animatorSet.start();
-            iv_trash.setVisibility(View.VISIBLE);
-            TranslateAnim.startTranslateY(iv_trash, -tv_textView.getY() + 20);
-            Handler handler1 = new Handler();
-            handler1.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    iv_trash.setImageDrawable(animatedVectorDrawable);
-                    animatedVectorDrawable.start();
-                }
-            }, 650);
-            AnimatorSet animatorSet1 = new AnimatorSet();
-            ObjectAnimator translatetrashToBellow = ObjectAnimator.ofFloat(iv_trash, "translationY", tv_textView.getY() + 100);
-            ObjectAnimator translateVoice = ObjectAnimator.ofFloat(iv_voice, "translationY", tv_textView.getY() + 100);
-            animatorSet1.setInterpolator(new AccelerateInterpolator());
-            animatorSet1.setStartDelay(900);
-            animatorSet1.setDuration(300);
-            animatorSet1.playTogether(translatetrashToBellow, translateVoice);
-            animatorSet1.start();
-            iv_voice.clearColorFilter();
-            iv_voice.clearAnimation();
-            Handler handler2 = new Handler();
-            handler2.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    iv_voice.setVisibility(View.GONE);
-                }
-            }, 900);
-            AnimatorSet animatorSet2 = new AnimatorSet();
-            ObjectAnimator backRotationVoice = ObjectAnimator.ofFloat(iv_voice, "rotation", 180, 0);
-            ObjectAnimator backTranslateXVoice = ObjectAnimator.ofFloat(iv_voice, "translationX", 0);
-            ObjectAnimator backTranslateYVoice = ObjectAnimator.ofFloat(iv_voice, "translationY", 0);
-            animatorSet2.setInterpolator(new AccelerateInterpolator());
-            animatorSet2.setDuration(300);
-            animatorSet2.setStartDelay(1200);
-            animatorSet2.playTogether(backRotationVoice, backTranslateXVoice, backTranslateYVoice);
-            animatorSet2.start();
-            AnimatorSet animatorSet3 = new AnimatorSet();
-            ObjectAnimator translateAdd = ObjectAnimator.ofFloat(ibtn_add, "translationX", 0);
-            ObjectAnimator translateTextView1 = ObjectAnimator.ofFloat(tv_textView, "translationX", 0);
-            animatorSet3.setInterpolator(new AccelerateInterpolator());
-            animatorSet3.setDuration(300);
-            animatorSet3.setStartDelay(1200);
-            animatorSet3.playSequentially(translateTextView1, translateAdd);
-            animatorSet3.start();
-            AlphaAnim.fadeIn(context, ibtn_voice);
-            AlphaAnim.fadeIn(context, ibtn_more);
-            AlphaAnim.fadeIn(context, ibtn_camera);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    isSwiping = false;
-                }
-            }, 1800);
-            count = false;
-        }
+    if (move.getRawX() <= ibtn_voice.getX() - 5 && count ) {
+
+        //ghesmate ghofl mial bala
+        final ObjectAnimator translateLock = ObjectAnimator.ofFloat(relaytivelayout_lock, "translationY", 330);
+        translateLock.setDuration(300);
+        translateLock.start();
+        //arrow ofoghi harkat mikone va mahv mishe
+        lin_arrow.startAnimation(fade3);
+        fade3.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                // vaghti arrow mahv shod chronometer az bein mire
+                counter_tv.stop();
+                counter_tv.setVisibility(View.INVISIBLE);
+                //animation microphon az bein mire
+                iv_voice.clearAnimation();
+                //microphon be samte bala harkat mikone
+                ObjectAnimator translateTextView = ObjectAnimator.ofFloat(iv_voice, "translationY", -150);
+                translateTextView.setDuration(300);
+                translateTextView.start();
+
+                translateTextView.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        // vaghti harkat microphon be bala tamon shod 180 daraje micharkhe
+                        ObjectAnimator translate = ObjectAnimator.ofFloat(iv_voice, "rotation", 0, 180);
+                        translate.setDuration(300);
+                        translate.start();
+                        translate.addListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animator) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animator) {
+                                //microphon be samte payin harkat mikone
+                                ObjectAnimator translateTextView = ObjectAnimator.ofFloat(iv_voice, "translationY", 0);
+                                translateTextView.setDuration(300);
+                                translateTextView.start();
+                                //satl ashghal miad bala va daresh baz mishe
+                                iv_trash.setVisibility(View.VISIBLE);
+                                ObjectAnimator translatetrash1 = ObjectAnimator.ofFloat(iv_trash, "translationY", -tv_textView.getY() + 20);
+                                translatetrash1.setDuration(300);
+                                translatetrash1.start();
+                                iv_trash.setImageDrawable(animatedVectorDrawable);
+                                animatedVectorDrawable.start();
+                                translateTextView.addListener(new Animator.AnimatorListener() {
+                                    @Override
+                                    public void onAnimationStart(Animator animator) {
+
+                                    }
+
+                                    @Override
+                                    public void onAnimationEnd(Animator animator) {
+                                        // vaghti microphon omad payin ham satl ashghal ham microphon hamzaman be samte payin mian
+                                        ObjectAnimator translatetrash1 = ObjectAnimator.ofFloat(iv_trash, "translationY", tv_textView.getY() + 100);
+                                        translatetrash1.setDuration(300);
+                                        translatetrash1.start();
+                                        ObjectAnimator translatetrash = ObjectAnimator.ofFloat(iv_voice, "translationY", tv_textView.getY() + 100);
+                                        translatetrash.setDuration(300);
+                                        translatetrash.start();
+
+                                        translatetrash1.addListener(new Animator.AnimatorListener() {
+                                            @Override
+                                            public void onAnimationStart(Animator animator) {
+
+                                            }
+
+                                            @Override
+                                            public void onAnimationEnd(Animator animator) {
+                                                iv_voice.setVisibility(View.GONE);
+
+                                                //inja vaghti ham iv_voice  va ham iv_trash payin raftan microphon bayad becharkhe va be halat avalie bargarde
+                                                ObjectAnimator translate = ObjectAnimator.ofFloat(iv_voice, "rotation", 180, 0);
+                                                translate.setDuration(200);
+                                                translate.start();
+                                                ObjectAnimator translateVoice = ObjectAnimator.ofFloat(iv_voice, "translationX", 0);
+                                                translateVoice.setDuration(200);
+                                                translateVoice.start();
+                                                ObjectAnimator translateVoiceY = ObjectAnimator.ofFloat(iv_voice, "translationY", 0);
+                                                translateVoiceY.setDuration(200);
+                                                translateVoiceY.start();
+
+                                                ObjectAnimator translateAdd = ObjectAnimator.ofFloat(ibtn_add, "translationX", 0);
+                                                translateAdd.setDuration(300);
+                                                translateAdd.start();
+                                                ObjectAnimator translateTextView = ObjectAnimator.ofFloat(tv_textView, "translationX", 0);
+                                                translateTextView.setDuration(300);
+                                                translateTextView.start();
+
+                                                ibtn_voice.startAnimation(fadein);
+                                                ibtn_more.startAnimation(fadein);
+                                                ibtn_camera.startAnimation(fadein);
+                                                invalidate = true;
+                                                isSwiping = false;
+
+                                            }
+
+                                            @Override
+                                            public void onAnimationCancel(Animator animator) {
+
+                                            }
+
+                                            @Override
+                                            public void onAnimationRepeat(Animator animator) {
+
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onAnimationCancel(Animator animator) {
+
+                                    }
+
+                                    @Override
+                                    public void onAnimationRepeat(Animator animator) {
+
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animator) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animator) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        count = false;
     }
+}
 
     public void animationLock() {
         if (validate) {
-            AnimatorSet animatorSet10 = new AnimatorSet();
-            ObjectAnimator translatetrash1 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", -10);
-            ObjectAnimator translatetrash0 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", 10);
-            ObjectAnimator translatetrash00 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", 10);
-            animatorSet10.setDuration(300);
-            animatorSet10.setInterpolator(new AccelerateInterpolator());
-            animatorSet10.playTogether(translatetrash1, translatetrash0, translatetrash00);
-            animatorSet10.start();
+            AnimatorSet set=new AnimatorSet();
+            translatetrash1 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", -10);
+            translatetrash0 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", 10);
+            translatetrash00 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", 10);
+            set.setDuration(300);
+            set.setInterpolator(new AccelerateDecelerateInterpolator());
+            set.playTogether(translatetrash1, translatetrash0,translatetrash00);
+            set.start();
             translatetrash00.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {
@@ -310,6 +423,7 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
 
                 @Override
                 public void onAnimationCancel(Animator animator) {
+
                 }
 
                 @Override
@@ -321,29 +435,30 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
 
     public void animationLock1() {
         if (validate) {
-            AnimatorSet animatorSet0 = new AnimatorSet();
-            ObjectAnimator translatetrash11 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", 0);
-            ObjectAnimator translatetrash000 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", -15);
-            ObjectAnimator translatetrash0000 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", -15);
-            animatorSet0.setDuration(300);
-            animatorSet0.setInterpolator(new AccelerateInterpolator());
-            animatorSet0.playTogether(translatetrash11, translatetrash000, translatetrash0000);
-            animatorSet0.start();
-            animate1(0, 300);
-            animate2(4, 600);
-            animate1(0, 900);
-            AnimatorSet animatorSet4 = new AnimatorSet();
-            ObjectAnimator translatetrashupper3 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", 4);
-            ObjectAnimator translatetrash3 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", -4);
-            ObjectAnimator translatetrasharrow3 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", -4);
-            animatorSet4.setInterpolator(new AccelerateInterpolator());
-            animatorSet4.setDuration(300);
-            animatorSet4.setStartDelay(1200);
-            animatorSet4.playTogether(translatetrashupper3, translatetrash3, translatetrasharrow3);
-            animatorSet4.start();
-            translatetrasharrow3.addListener(new Animator.AnimatorListener() {
+            AnimatorSet set = new AnimatorSet();
+            translatetrash11 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", 0);
+            translatetrash000 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", -15);
+            translatetrash0000 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", -15);
+            ObjectAnimator translatetrashupper = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", 0);
+            ObjectAnimator translatetrash1 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", 0);
+            ObjectAnimator translatetrasharrow = ObjectAnimator.ofFloat(iv_arrowup, "translationY", 0);
+            ObjectAnimator translatetrashupper0 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", 4);
+            ObjectAnimator translatetrash20 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", -4);
+            ObjectAnimator translatetrasharrow0 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", -4);
+            ObjectAnimator translatetrashupper00 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", 0);
+            ObjectAnimator translatetrash1000 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", 0);
+            ObjectAnimator translatetrasharrow00 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", 0);
+            ObjectAnimator translatetrashupper1 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", 4);
+            ObjectAnimator translatetrash201 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", -4);
+            ObjectAnimator translatetrasharrow1 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", -4);
+            set.setDuration(300);
+            set.setInterpolator(new AccelerateDecelerateInterpolator());
+            set.playTogether(translatetrash11, translatetrash000, translatetrash0000, translatetrashupper, translatetrash1, translatetrasharrow, translatetrashupper0, translatetrash20, translatetrasharrow0, translatetrashupper00, translatetrash1000, translatetrasharrow00, translatetrashupper1, translatetrash201, translatetrasharrow1);
+            set.start();
+            translatetrasharrow1.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {
+
                 }
 
                 @Override
@@ -353,40 +468,18 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
 
                 @Override
                 public void onAnimationCancel(Animator animator) {
+
                 }
 
                 @Override
                 public void onAnimationRepeat(Animator animator) {
+
                 }
             });
         }
     }
 
-    private void animate2(float translate, long delay) {
-        AnimatorSet animatorSet2 = new AnimatorSet();
-        ObjectAnimator translatetrashupper0 = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", translate);
-        ObjectAnimator translatetrash20 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", -translate);
-        ObjectAnimator translatetrasharrow0 = ObjectAnimator.ofFloat(iv_arrowup, "translationY", -translate);
-        animatorSet2.setInterpolator(new AccelerateInterpolator());
-        animatorSet2.setDuration(300);
-        animatorSet2.setStartDelay(delay);
-        animatorSet2.playTogether(translatetrashupper0, translatetrash20, translatetrasharrow0);
-        animatorSet2.start();
-    }
-
-    private void animate1(float translate, long delay) {
-        AnimatorSet animatorSet1 = new AnimatorSet();
-        ObjectAnimator translatetrashupper = ObjectAnimator.ofFloat(iv_upper_lock, "translationY", translate);
-        ObjectAnimator translatetrash10 = ObjectAnimator.ofFloat(iv_lower_lock, "translationY", translate);
-        ObjectAnimator translatetrasharrow = ObjectAnimator.ofFloat(iv_arrowup, "translationY", translate);
-        animatorSet1.setInterpolator(new AccelerateInterpolator());
-        animatorSet1.setDuration(300);
-        animatorSet1.playTogether(translatetrashupper, translatetrash10, translatetrasharrow);
-        animatorSet1.setStartDelay(delay);
-        animatorSet1.start();
-    }
-
-    private int dp(float value) {
+    public int dp(float value) {
         if (value == 0) {
             return 0;
         }
@@ -394,32 +487,6 @@ public class RecordView1 extends RelativeLayout implements View.OnTouchListener 
         return (int) Math.ceil(density * value);
     }
 
-    private void startRecording(String m) {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(m);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e("bbbbb", "prepare() failed");
-        }
-        mRecorder.start();
-        Toast.makeText(context, "Recording started", Toast.LENGTH_LONG).show();
-    }
-
-    private void stopRecording() {
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
-        Toast.makeText(context, "Record stop", Toast.LENGTH_LONG).show();
-    }
-
-    public void setFileName() {
-        mFileName = context.getExternalCacheDir().getAbsolutePath();
-        mFileName += "/a.3gp";
-    }
 }
 
 

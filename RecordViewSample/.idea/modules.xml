@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RecordViewSample.iml" filepath="$PROJECT_DIR$/RecordViewSample.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://E:\Myanim1-master\RecordViewSample\app\app.iml" filepath="E:\Myanim1-master\RecordViewSample\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/recordview/recordview.iml" filepath="$PROJECT_DIR$/recordview/recordview.iml" />
     </modules>
   </component>

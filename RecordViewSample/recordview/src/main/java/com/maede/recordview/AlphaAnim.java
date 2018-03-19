@@ -6,33 +6,30 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 /**
- * Created by Dear-user on 03/17/2018.
+ * Created by Khoshkam on 3/17/2018.
  */
 
 public class AlphaAnim {
-    public static void fadeOut(Context context, View view) {
+
+    public  static void startFadeOut(Context context){
         Animation fadeOut = AnimationUtils.loadAnimation(context, R.anim.fade_out_animation);
-        view.startAnimation(fadeOut);
+    }
+    public static  void startFadeIn(Context context,View view){
+       Animation fadein = AnimationUtils.loadAnimation(context, R.anim.fade_in_animation);
+       view.startAnimation(fadein);
     }
 
-    public static void fadeIn(Context context, View view) {
-        Animation fadein = AnimationUtils.loadAnimation(context, R.anim.fade_in_animation);
-        view.startAnimation(fadein);
+    public  static  void statdFadeAndTransition(Context context,View view){
+       Animation fade_transition_arrow = AnimationUtils.loadAnimation(context, R.anim.transition_fade);
+        view.startAnimation(fade_transition_arrow);
+    }
+    public  static  void startFadeRepeat(Context context,View view){
+       Animation fade = AnimationUtils.loadAnimation(context, R.anim.fade);
+       view.startAnimation(fade);
     }
 
-    public static void fadeRepeat(Context context, View view) {
-        Animation fade = AnimationUtils.loadAnimation(context, R.anim.fade);
-        view.startAnimation(fade);
+    public  static  void startFadeOnce(Context context,View view){
+        Animation fade1 = AnimationUtils.loadAnimation(context, R.anim.fade1);
+        view.startAnimation(fade1);
     }
-
-    public static void fadeButtonVoice(Context context, View view) {
-        Animation fade = AnimationUtils.loadAnimation(context, R.anim.fade_ibtnvoice);
-        view.startAnimation(fade);
-    }
-
-    public static void fadeTranslate(Context context, View view) {
-        Animation fade3 = AnimationUtils.loadAnimation(context, R.anim.transition_fade);
-        view.startAnimation(fade3);
-    }
-
 }
